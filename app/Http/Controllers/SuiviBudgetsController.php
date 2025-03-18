@@ -18,6 +18,58 @@ class SuiviBudgetsController extends Controller
         return view('Auth.login');
     }
 
+    public function listeCompte()
+    {
+        $users = User::all();
+        //dd($users);
+        return view('Auth.listing', compact('users'));
+    }
+
+    public function edituser(User $user)
+    {
+        //dd($user);
+        return view('Auth.edit', compact('user'));
+    }
+
+    public function updateuser(Request $request, $id)
+    {
+        // Validation des données
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8', // Le mot de passe est facultatif
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Récupérer l'utilisateur à mettre à jour
+        $user = User::findOrFail($id);
+
+        // Mettre à jour les champs
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+
+        // Mettre à jour le mot de passe si fourni
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->input('password'));
+        }
+
+        // Enregistrer les modifications
+        $user->save();
+
+        // Rediriger avec un message de succès
+        return redirect()->route('listeCompte')->with('success', 'Utilisateur mis à jour avec succès.');
+    }
+
+
+    public function destroyuser(User $user)
+    {
+        $user->delete();
+
+        return redirect()->route('listeCompte')->with('success', 'Utilisateur supprimé avec succès.');
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -57,7 +109,7 @@ class SuiviBudgetsController extends Controller
         ]);
 
 
-        return redirect('/')->with('success', 'Inscription réussie ! Veuillez vous connecter.');
+        return redirect()->Route('listeCompte')->with('success', 'Inscription réussie ! Veuillez vous connecter.');
     }
 
     /**

@@ -15,16 +15,26 @@ Route::middleware(['guest'])->group(function () {
     // Route pour la gestion de la connexion (login) via une requête POST.
     Route::post('/login', [SuiviBudgetsController::class, 'handleLogin'])->name('login.handleLogin');
 
-    // Route pour afficher le formulaire d'inscription (register).
-    Route::get('/register', [SuiviBudgetsController::class, 'create'])->name('auth.register');
-
-    // Route pour traiter la soumission du formulaire d'inscription via une requête POST.
-    Route::post('/register', [SuiviBudgetsController::class, 'store'])->name('register.store');
-});
+  });
 
 
 // Groupe de routes protégées par le middleware 'auth', nécessitant une authentification.
 Route::middleware(['auth'])->group(function () {
+    
+    Route::get('/listeCompte', [SuiviBudgetsController::class, 'listeCompte'])->name('listeCompte');
+
+      // Route pour afficher le formulaire d'inscription (register).
+    Route::get('/register', [SuiviBudgetsController::class, 'create'])->name('auth.register');
+   // Route pour traiter la soumission du formulaire d'inscription via une requête POST.
+   Route::post('/register', [SuiviBudgetsController::class, 'store'])->name('register.store');
+  
+    Route::get('/editUser/{user}', [SuiviBudgetsController::class, 'edituser'])->name('edit.user');
+
+    Route::put('/users/{id}', [SuiviBudgetsController::class, 'updateuser'])->name('users.update');
+
+    Route::delete('/destroyuser/{user}', [SuiviBudgetsController::class, 'destroyuser'])->name('destroy.user');
+
+   
     // Route pour la déconnexion (logout) via une requête POST.
     Route::post('/logout', [SuiviBudgetsController::class, 'logout'])->name('logout');
 

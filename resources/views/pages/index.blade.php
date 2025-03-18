@@ -12,13 +12,12 @@
                         <div class="d-flex align-items-start row">
                             <div class="col-sm-7">
                                 <div class="card-body ">
-                                    <h5 class="card-title text-primary mb-3">Bienvenue sur GESCOMPT {{ Auth::user()->name }} ! 🎉</h5>
+                                    <h5 class="card-title text-primary mb-3">Bienvenue sur MONIFY {{ Auth::user()->name }} ! </h5>
                                     <p class="mb-6"> Ici, vous pouvez gérer vos finances en toute simplicité et efficacité.
                                         .<br />Explorez les fonctionnalités offertes, telles que la gestion des
                                         transactions, le suivi des comptes et bien plus encore.</p>
 
-                                    <a href="javascript:;" class="btn btn-sm btn-outline-primary">View
-                                        Badges</a>
+                                    {{-- <a href="javascript:;" class="btn btn-sm btn-outline-primary">Espace de gestion financière</a> --}}
                                 </div>
                             </div>
                             <div class="col-sm-5 text-center text-sm-left">
@@ -46,17 +45,13 @@
                                                 aria-haspopup="true" aria-expanded="false">
                                                 <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                                                <a class="dropdown-item" href="javascript:void(0);">View
-                                                    More</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                     <p class="mb-1">Solde initial</p>
                                     <h4 class="card-title mb-3">{{ $budgetInitial }} FCFA</h4>
                                     <small class="text-success fw-medium"><i class="icon-base bx bx-up-arrow-alt"></i>
-                                        +72.80%</small>
+                                        </small>
                                 </div>
                             </div>
                         </div>
@@ -73,11 +68,7 @@
                                                 aria-haspopup="true" aria-expanded="false">
                                                 <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                                                <a class="dropdown-item" href="javascript:void(0);">View
-                                                    More</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                     <p class="mb-1">Dépense Totales</p>
@@ -93,7 +84,7 @@
                 <!-- Total Revenue -->
 
                 <!--/ Total Revenue -->
-                <div class="col-12 col-md-8 col-lg-12 col-xxl-6 order-3 order-md-2 profile-report">
+                <div class="col-12 col-md-4 col-lg-12 col-xxl-6 order-2 order-md-2 profile-report">
                     <div class="row">
                         <div class="col-6 mb-6 payments">
                             <div class="card h-100">
@@ -118,7 +109,7 @@
                                     <p class="mb-1">Solde provisoire </p>
                                     <h4 class="card-title mb-3">{{ $budgetprovisoir }} FCFA</h4>
                                     <small class="text-success fw-medium"><i class="icon-base bx bx-down-arrow-alt"></i>
-                                        -14.82%</small>
+                                        </small>
                                 </div>
                             </div>
                         </div>
@@ -135,17 +126,13 @@
                                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                             </button>
-                                            <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                                                <a class="dropdown-item" href="javascript:void(0);">View
-                                                    More</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                            </div>
+                                           
                                         </div>
                                     </div>
                                     <p class="mb-1">Solde Actuel</p>
                                     <h4 class="card-title mb-3">{{ $soldeActuel }} FCFA</h4>
                                     <small class="text-success fw-medium"><i class="icon-base bx bx-up-arrow-alt"></i>
-                                        +28.14%</small>
+                                        </small>
                                 </div>
                             </div>
                         </div>
@@ -162,54 +149,39 @@
                 <div class="col-md-6 col-lg-6 order-2 mb-6">
                     <div class="card h-100">
                         <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="card-title m-0 me-2 btn btn-success">Revenue net disponible {{ $totalRevenus }} FCFA
-                            </h5>
+                            <h5 class="card-title m-0 me-2 btn btn-success">Revenu net disponible {{ number_format($totalRevenus, 2) }} FCFA</h5>
                             <div class="dropdown">
-                                <button class="btn text-body-secondary p-0" type="button" id="transactionID"
-                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <button class="btn text-body-secondary p-0" type="button" id="transactionID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="icon-base bx bx-dots-vertical-rounded icon-lg"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="transactionID">
-                                    <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                                    <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-                                    <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-                                </div>
                             </div>
                         </div>
                         <div class="card-body pt-4">
-                            @forelse ($revenuNet as $revenu)
-                                <ul class="p-0 m-0">
-                                    <li class="d-flex align-items-center mb-6">
-                                        <div class="avatar flex-shrink-0 me-3">
-                                            <img src="{{ asset('../assets/img/icons/unicons/cc-primary.png') }}"
-                                                alt="User" class="rounded" />
-                                        </div>
-                                        <div
-                                            class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                            <small class="d-block">{{ $revenu->description_transaction }}</small>
-                                            <div class="me-2">
-                                                <small class="d-block">Objectif</small>
-                                                <h6 class="fw-normal mb-0"> {{ $revenu->montantbudget }} FCFA</h6>
-                                            </div>
-                                            <div class="me-2">
-                                                <small class="d-block">Gagné</small>
-                                                <h6 class="fw-normal mb-0"> {{ $revenu->montant_transaction }} FCFA</h6>
-                                            </div>
-                                            <div class="me-2">
-                                                <small class="d-block">à Atteindre</small>
-                                                <h6 class="fw-normal mb-0">{{ $revenu->montantbudget - $revenu->montant_transaction }} FCFA</h6>
-                                            </div>
-                                        </div>
-                                    </li>
-
-
-                                </ul>
-                            @empty
-                            @endforelse
-
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Objectif</th>
+                                        <th>Gagné</th>
+                                        <th>Reste à Atteindre</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($categoriesRevenu as $categorie)
+                                        <tr>
+                                            <td>{{ $categorie->description }}</td>
+                                           
+                                            <td>{{ $categorie->budgetTotal }} FCFA</td>
+                                            <td>{{ $categorie->budgetReel }} FCFA</td>
+                                            <td>{{$categorie->budgetRestant }} FCFA</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+                
                 <!--/ Transactions -->
 
                 <!-- pill table -->

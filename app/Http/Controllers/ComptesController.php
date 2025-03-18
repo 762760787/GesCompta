@@ -30,40 +30,49 @@ class ComptesController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'type' => 'required|string',
-            'nom' => 'required|string',
-            'solde' => 'required|numeric',
-            'numero' => 'required|string',
-        ]);
+{
+    $validatedData = $request->validate([
+        'type' => 'required|string',
+        'nom' => 'required|string',
+        'solde' => 'required|numeric',
+        'numero' => 'required|string',
+    ]);
 
-        // Récupérer le budget global
-        $budgetGlobal = Budgets::first()->montant;
+    // Récupérer le premier budget existant
+    $budget = Budgets::first();
 
-        // Calculer la somme des soldes initiaux existants
-        $sommeSoldesExistants = Comptes::sum('solde');
-
-        // Vérifier si le nouveau solde initial dépasse le budget global
-        if ($validatedData['solde'] > $budgetGlobal) {
-            return redirect()->back()->with('error', 'Le solde initial de ce compte dépasse le budget global.');
-        }
-
-        // Vérifier si la somme totale des soldes dépasse le budget global
-        if (($sommeSoldesExistants + $validatedData['solde']) > $budgetGlobal) {
-            return redirect()->back()->with('error', 'La somme totale des soldes initiaux dépasse le budget global.');
-        }
-
-        Comptes::create([
-            'type' => $validatedData['type'],
-            'nom' => $validatedData['nom'],
-            'solde' => $validatedData['solde'],
-            'numero' => $validatedData['numero'],
-            'idbudget' => 1, // Assurez-vous d'avoir un budget par défaut ou de gérer cela correctement
-        ]);
-
-        return redirect()->back()->with('success', 'Compte ajouté avec succès.');
+    // Vérifier si un budget existe
+    if (!$budget) {
+        return redirect()->back()->with('error', 'Aucun budget trouvé. Veuillez d\'abord créer un budget.');
     }
+
+    $budgetGlobal = $budget->montant;
+
+    // Calculer la somme des soldes initiaux existants
+    $sommeSoldesExistants = Comptes::sum('solde');
+
+    // Vérifier si le nouveau solde initial dépasse le budget global
+    if ($validatedData['solde'] > $budgetGlobal) {
+        return redirect()->back()->with('error', 'Le solde initial de ce compte dépasse le budget global.');
+    }
+
+    // Vérifier si la somme totale des soldes dépasse le budget global
+    if (($sommeSoldesExistants + $validatedData['solde']) > $budgetGlobal) {
+        return redirect()->back()->with('error', 'La somme totale des soldes initiaux dépasse le budget global.');
+    }
+
+    // Créer le compte avec l'ID du budget trouvé
+    Comptes::create([
+        'type' => $validatedData['type'],
+        'nom' => $validatedData['nom'],
+        'solde' => $validatedData['solde'],
+        'numero' => $validatedData['numero'],
+        'idbudget' => $budget->id, // On utilise l'ID du budget existant
+    ]);
+
+    return redirect()->back()->with('success', 'Compte ajouté avec succès.');
+}
+
 
     /**
      * Display the specified resource.

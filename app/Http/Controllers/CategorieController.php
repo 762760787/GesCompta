@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Categorie;
 use App\Models\Budgets;
-use App\Models\transaction;
+use App\Models\suivi_budgets;
 use Illuminate\Http\Request;
+
 class CategorieController extends Controller
 {
     /**
@@ -23,7 +24,7 @@ class CategorieController extends Controller
     {
         $categories = Categorie::all();
         $budgets = Budgets::all(); // Récupérer les budgets pour le tableau
-        return view('pages/Categories.categorieFrais', compact('categories','budgets'));
+        return view('pages/Categories.categorieFrais', compact('categories', 'budgets'));
     }
 
     public function store(Request $request)
@@ -33,41 +34,45 @@ class CategorieController extends Controller
             'montantbudget' => 'required|numeric',
             'type' => 'required|string',
         ]);
-
+    
         // 1. Récupérer le budget global
-        $budgetGlobal = Budgets::find(1)->montant; // Assurez-vous d'adapter l'ID du budget
-
+        $budgetSuivi = suivi_budgets::first(); // Récupère le premier budget disponible
+    
+        // Vérifier si un budget existe avant d'accéder à 'montant'
+        if (!$budgetSuivi) {
+            return redirect()->back()->with('error', 'Aucun budget de suivi trouvé. Veuillez d\'abord en créer un.');
+        }
+    
+        $budgetGlobal = $budgetSuivi->montant; // Maintenant, on est sûr que l'objet existe
+    
         // 2. Calculer la somme des montants budgétisés existants pour les dépenses
         $sommeMontantsExistants = Categorie::where('type', 'Depense')->sum('montantbudget');
-
+    
         // 3. Vérifier si l'ajout dépasse le budget global
-        if ($validatedData['type'] == 'Depense' && ($sommeMontantsExistants + $validatedData['montantbudget']) > $budgetGlobal) {
-            return redirect()->back()->with('error', 'Le montant total budgétisé dépasse le budget global.');
-        }
-
-        // 4. Vérifier si le montant de la catégorie dépasse le budget global
-        if ($validatedData['type'] == 'Depense' && $validatedData['montantbudget'] > $budgetGlobal) {
-            return redirect()->back()->with('error', 'Le montant de cette catégorie dépasse le budget global.');
-        }
-//dd($request);
-        // 5. Ajouter la catégorie si le budget n'est pas dépassé
+        // if ($validatedData['type'] == 'Depense' && ($sommeMontantsExistants + $validatedData['montantbudget']) > $budgetGlobal) {
+        //     return redirect()->back()->with('error', 'Le montant total budgétisé dépasse le budget global.');
+        // }
+    
+        // // 4. Vérifier si le montant de la catégorie dépasse le budget global
+        // if ($validatedData['type'] == 'Depense' && $validatedData['montantbudget'] > $budgetGlobal) {
+        //     return redirect()->back()->with('error', 'Le montant de cette catégorie dépasse le budget global.');
+        // }
+    
+        // 5. Ajouter la catégorie
         Categorie::create([
             'description' => $validatedData['description'],
             'montantbudget' => $validatedData['montantbudget'],
-            'idbudget' => 1, // Assurez-vous d'avoir un budget par défaut ou de gérer cela correctement
+            'idbudget' => $budgetSuivi->id, // On utilise l'ID du budget réel
             'type' => $validatedData['type'],
         ]);
-
+    
         return redirect()->back()->with('success', 'Catégorie ajoutée avec succès.');
     }
+    
 
     /**
      * Display the specified resource.
      */
-    public function show(Categorie $categorie)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -106,16 +111,16 @@ class CategorieController extends Controller
     {
         $category = Categorie::find($id);
 
-    if (!$category) {
-        return redirect()->back()->with('error', 'Catégorie non trouvée.');
-    }
+        if (!$category) {
+            return redirect()->back()->with('error', 'Catégorie non trouvée.');
+        }
 
-    // Vérifie si la catégorie est utilisée ailleurs
-    if ($category->transaction()->count() > 0) {
-        return redirect()->back()->with('error', 'Impossible de supprimer cette catégorie car elle est utilisée.');
-    }
+        // Vérifie si la catégorie est utilisée ailleurs
+        if ($category->transaction()->count() > 0) {
+            return redirect()->back()->with('error', 'Impossible de supprimer cette catégorie car elle est utilisée.');
+        }
 
-    $category->delete();
+        $category->delete();
         return redirect()->route('categories.create')->with('success', 'Catégorie supprimée avec succès.');
     }
 }

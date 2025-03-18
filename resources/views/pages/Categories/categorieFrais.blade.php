@@ -28,14 +28,18 @@
                                     <label class="form-label" for="description">Description</label>
                                     <select class="form-select" name="description" id="description" required>
                                         <option value="">Sélectionner une Catégorie</option>
-                                        <option value="Cadeau ou don">Cadeau ou don</option>
-                                        <option value="Salaires">Salaires</option>
-                                        <option value="Epargne">Épargne</option>
-                                        <option value="Transport">Transport</option>
+                                        <option value="Logo">Logo</option>
+                                        <option value="Affcihe">Affiche</option>
+                                        <option value="Internet">Internet</option>
+                                        <option value="Cv">Cv</option>
+                                        <option value="Application">Application</option>
+                                        <option value="Carte de Membre">Carte de Membre</option>
+                                        <option value="Carte de Visite">Carte de Visite</option>
+                                        <option value="Operation divers">Opération divers</option>
+                                        <option value="Fourniture de Bureau">Fourniture de Bureau</option>
                                         <option value="Achats">Achats</option>
                                         <option value="Ventes">Ventes</option>
-                                        <option value="Operation divers">Opération divers</option>
-                                    </select>
+                                        </select>
                                     <input type="text" class="form-control mt-1" id="nouvelleDescription"
                                         placeholder="Ajouter une nouvelle catégorie">
                                     <button type="button" class="form-control mt-1"

@@ -3,59 +3,79 @@
 namespace App\Http\Controllers;
 
 use App\Models\transaction;
-use App\Http\Requests\StoretransactionRequest;
-use App\Http\Requests\UpdatetransactionRequest;
+
 use Illuminate\Http\Request;
 use App\Models\Categorie;
 use Carbon\Carbon;
 use App\Models\comptes;
 use Illuminate\Support\Facades\DB;
 use App\Models\suivi_budgets;
+use App\Models\Budgets;
 
 class TransactionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = DB::SELECT("SELECT 
-                                        comptes.nom AS nom_compte,
-                                        comptes.solde AS solde_compte,
-                                        transactions.id As id,
-                                        transactions.description AS description_transaction,
-                                        transactions.montant AS montant_transaction,
-                                        transactions.date AS date_transaction,
-                                        categories.description AS description_categorie
-                                    FROM 
-                                        comptes
-                                    JOIN 
-                                        transactions ON comptes.id = transactions.idcompte
-                                    JOIN 
-                                        categories ON transactions.idcategorie = categories.id
-                                    WHERE
-                                        categories.type = 'Depense'");
-                                        
-       return view('pages/Transactions.listingTransaction', compact('transactions'));
-    }
-
-    public function listeRevenu() {
-        $transactions = DB::SELECT("SELECT 
-                                        transactions.description AS description_transaction,
-                                        transactions.montant AS montant_transaction,
-                                        transactions.date AS date_transaction,
-                                        transactions.id AS id,
-                                        categories.description AS description_categorie
-                                    FROM 
-                                        transactions
-                                    JOIN 
-                                        categories ON transactions.idcategorie = categories.id
-                                    WHERE
-                                        categories.type = 'Revenu'");
-            // dd($transactions);                            
-       return view('pages/Transactions.listingTransactionRevenu', compact('transactions'));
+        $search = $request->input('search');
     
+        $transactionsQuery = DB::table('transactions')
+            ->join('comptes', 'comptes.id', '=', 'transactions.idcompte')
+            ->join('categories', 'transactions.idcategorie', '=', 'categories.id')
+            ->where('categories.type', 'Depense')
+            ->select(
+                'comptes.nom as nom_compte',
+                'comptes.solde as solde_compte',
+                'transactions.id as id',
+                'transactions.description as description_transaction',
+                'transactions.montant as montant_transaction',
+                'transactions.date as date_transaction',
+                'categories.description as description_categorie'
+            );
+    
+        if ($search) {
+            $transactionsQuery->where(function ($query) use ($search) {
+                $query->where('transactions.description', 'like', '%' . $search . '%')
+                      ->orWhere('comptes.nom', 'like', '%' . $search . '%')
+                      ->orWhere('categories.description', 'like', '%' . $search . '%');
+            });
+        }
+    
+        $transactions = $transactionsQuery->get();
+        
+        return view('pages/Transactions.listingTransaction', compact('transactions', 'search'));
     }
+    
+
+    public function listeRevenu(Request $request)
+    {
+        $search = $request->input('search');
+    
+        $transactionsQuery = DB::table('transactions')
+            ->join('categories', 'transactions.idcategorie', '=', 'categories.id')
+            ->where('categories.type', 'Revenu')
+            ->select(
+                'transactions.id as id',
+                'transactions.description as description_transaction',
+                'transactions.montant as montant_transaction',
+                'transactions.date as date_transaction',
+                'categories.description as description_categorie'
+            );
+    
+        if ($search) {
+            $transactionsQuery->where(function ($query) use ($search) {
+                $query->where('transactions.description', 'like', '%' . $search . '%')
+                      ->orWhere('categories.description', 'like', '%' . $search . '%');
+            });
+        }
+    
+        $transactions = $transactionsQuery->get();
+        
+        return view('pages/Transactions.listingTransactionRevenu', compact('transactions', 'search'));
+    }
+    
     /**
      * Show the form for creating a new resource.
      */
@@ -70,7 +90,7 @@ class TransactionController extends Controller
     {
         $categories = Categorie::where('type', 'Revenu')->get();
         $comptes = Comptes::all();
-        
+
         return view('pages/Transactions.AddTransactionRevenue', compact('categories', 'comptes'));
     }
 
@@ -83,48 +103,66 @@ class TransactionController extends Controller
             'date' => 'required|date',
             'idcompte' => 'required|exists:comptes,id',
         ]);
-    
-        $transactionDate = Carbon::parse($validatedData['date']);
-        $currentDate = Carbon::now()->startOfDay();
+
+        // Vérifier si la catégorie existe
+        $categorie = Categorie::find($validatedData['idcategorie']);
+        if (!$categorie) {
+            return redirect()->back()->with('error', 'Catégorie non trouvée.');
+        }
+
+        // Vérifier si le compte existe
         $compte = Comptes::find($validatedData['idcompte']);
-        $categorie = Categorie::find($validatedData['idcategorie']); // Récupérer la catégorie
-    
-        if ($validatedData['montant'] > $compte->solde && $categorie->type === 'Depense') {
-            return redirect()->back()->with('error', 'Le montant de la dépense est supérieur au solde du compte.');
+        if (!$compte) {
+            return redirect()->back()->with('error', 'Compte non trouvé.');
         }
-    
-        if ($transactionDate->lt($currentDate)) {
-            return redirect()->back()->with('error', 'La date de la transaction ne peut pas être antérieure à la date actuelle.');
+
+        // Vérifier si un budget existe
+        $budget = Budgets::first(); // Récupérer un budget existant
+        if (!$budget) {
+            return redirect()->back()->with('error', 'Aucun budget trouvé. Veuillez en créer un avant d’ajouter une transaction.');
         }
-    
+
         DB::beginTransaction();
-    
-        $transaction = Transaction::create([
-            'idcategorie' => $validatedData['idcategorie'],
-            'description' => $validatedData['description'],
-            'montant' => $validatedData['montant'],
-            'date' => $validatedData['date'],
-            'idcompte' => $validatedData['idcompte'],
-            'idbudget' => 1,
-        ]);
-    
-        if ($categorie->type === 'Revenu') {
-            $suiviBudget = suivi_budgets::where('idbudget', 1)->first();
-    
-            if ($suiviBudget) {
-                $suiviBudget->montant_budget += $validatedData['montant'];
-                $suiviBudget->save();
-            } else {
-                // Gérer le cas où le suivi du budget n'existe pas
+
+        try {
+            // Créer la transaction avec l'ID du budget valide
+            $transaction = Transaction::create([
+                'idcategorie' => $validatedData['idcategorie'],
+                'description' => $validatedData['description'],
+                'montant' => $validatedData['montant'],
+                'date' => $validatedData['date'],
+                'idcompte' => $validatedData['idcompte'],
+                'idbudget' => $budget->id, // Utiliser un budget valide
+            ]);
+
+            // Mettre à jour le solde du compte si c'est une dépense
+            if ($categorie->type === 'Depense') {
+                if ($compte->solde < $validatedData['montant']) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Le solde du compte est insuffisant.');
+                }
+                $compte->solde -= $validatedData['montant'];
+                $compte->save();
+
+                // Mettre à jour le suivi budgétaire
+                $suiviBudget = suivi_budgets::where('idbudget', $budget->id)->first();
+                if ($suiviBudget) {
+                    $suiviBudget->montant_budget -= $validatedData['montant'];
+                    $suiviBudget->save();
+                } else {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Aucun suivi budgétaire trouvé.');
+                }
             }
-        } else {
-            $compte->save();
+
+            DB::commit();
+            return redirect()->route('transactions.index')->with('success', 'Transaction ajoutée avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Erreur lors de l\'ajout de la transaction : ' . $e->getMessage());
         }
-    
-        DB::commit();
-    
-        return redirect()->route('transactions.index')->with('success', 'Transaction ajoutée avec succès.');
     }
+
 
     public function storeRevenu(Request $request)
     {
@@ -133,45 +171,50 @@ class TransactionController extends Controller
             'description' => 'required|string',
             'montant' => 'required|numeric',
             'date' => 'required|date',
-            
         ]);
-    
-        $transactionDate = Carbon::parse($validatedData['date']);
-        $currentDate = Carbon::now()->startOfDay();
-        
-        $categorie = Categorie::find($validatedData['idcategorie']); // Récupérer la catégorie
-    
-    
-        if ($transactionDate->lt($currentDate)) {
-            return redirect()->back()->with('error', 'La date de la transaction ne peut pas être antérieure à la date actuelle.');
+
+        // Vérifier si la catégorie existe
+        $categorie = Categorie::find($validatedData['idcategorie']);
+        if (!$categorie) {
+            return redirect()->back()->with('error', 'Catégorie non trouvée.');
         }
-    
+
+        // Vérifier si un budget existe
+        $budget = Budgets::first(); // Récupérer un budget existant
+        if (!$budget) {
+            return redirect()->back()->with('error', 'Aucun budget trouvé. Veuillez en créer un avant d’ajouter une transaction.');
+        }
+
         DB::beginTransaction();
-    
-        $transaction = Transaction::create([
-            'idcategorie' => $validatedData['idcategorie'],
-            'description' => $validatedData['description'],
-            'montant' => $validatedData['montant'],
-            'date' => $validatedData['date'],
-            'idbudget' => 1,
-        ]);
-    
-        if ($categorie->type === 'Revenu') {
-            $suiviBudget = suivi_budgets::where('idbudget', 1)->first();
-    
-            if ($suiviBudget) {
-                $suiviBudget->montant_budget += $validatedData['montant'];
-                $suiviBudget->save();
-            } else {
-                // Gérer le cas où le suivi du budget n'existe pas
+
+        try {
+            // Créer la transaction avec l'ID du budget valide
+            $transaction = Transaction::create([
+                'idcategorie' => $validatedData['idcategorie'],
+                'description' => $validatedData['description'],
+                'montant' => $validatedData['montant'],
+                'date' => $validatedData['date'],
+                'idbudget' => $budget->id, // On utilise un budget existant
+            ]);
+
+            // Si c'est un revenu, mettre à jour le suivi du budget
+            if ($categorie->type === 'Revenu') {
+                $suiviBudget = suivi_budgets::where('idbudget', $budget->id)->first();
+
+                if ($suiviBudget) {
+                    $suiviBudget->montant_budget += $validatedData['montant'];
+                    $suiviBudget->save();
+                } else {
+                    return redirect()->back()->with('error', 'Aucun suivi de budget trouvé pour ce budget.');
+                }
             }
-        } else {
-            
+
+            DB::commit();
+            return redirect()->route('transactions.revenu')->with('success', 'Transaction ajoutée avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Erreur lors de l\'ajout de la transaction : ' . $e->getMessage());
         }
-    
-        DB::commit();
-    
-        return redirect()->route('transactions.index')->with('success', 'Transaction ajoutée avec succès.');
     }
 
     public function edit(Transaction $transaction)
@@ -211,8 +254,8 @@ class TransactionController extends Controller
         return redirect()->route('transactions.index')->with('success', 'Transaction supprimée avec succès.');
     }
 
-//============================================================== Revenus=================================================//
-public function editRevenu(Transaction $transaction)
+    //============================================================== Revenus=================================================//
+    public function editRevenu(Transaction $transaction)
     {
         $categories = Categorie::where('type', 'Revenu')->get();
         $comptes = Comptes::all();
@@ -246,12 +289,10 @@ public function editRevenu(Transaction $transaction)
         $transaction = Transaction::findOrFail($id);
         $transaction->delete();
 
-        return redirect()->route('transactions.index')->with('success', 'Transaction supprimée avec succès.');
+        return redirect()->route('transactions.revenu')->with('success', 'Transaction supprimée avec succès.');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    
-    
 }
