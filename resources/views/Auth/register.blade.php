@@ -17,9 +17,9 @@
                         <div class="app-brand justify-content-center">
                             <a href="index.html" class="app-brand-link gap-2">
                                 <span class="app-brand-logo demo">
-                                    <img src="{{ asset('assets/img/logo.jpeg') }}" alt="Logo de KOSSI BAYE" style="max-width: 90px; max-height: 90px;">
+                                    <img src="{{ asset('../assets/img/favicon/favicon.ico') }}" alt="Logo de KOSSI BAYE" style="max-width: 90px; max-height: 90px;">
                                 </span>
-                                <span class="app-brand-text demo text-heading fw-bold">KOSSI BAYE</span>
+                                <span class="app-brand-text demo text-heading fw-bold">MONIFY</span>
                             </a>
                         </div>
 
