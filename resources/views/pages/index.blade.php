@@ -1,9 +1,7 @@
 @extends('layouts.apps')
 
 @section('content')
-    <!-- Content wrapper -->
     <div class="content-wrapper">
-        <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
 
             <div class="row">
@@ -45,13 +43,14 @@
                                                 aria-haspopup="true" aria-expanded="false">
                                                 <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                             </button>
-                                            
+
+
                                         </div>
                                     </div>
                                     <p class="mb-1">Solde initial</p>
                                     <h4 class="card-title mb-3">{{ $budgetInitial }} FCFA</h4>
                                     <small class="text-success fw-medium"><i class="icon-base bx bx-up-arrow-alt"></i>
-                                        </small>
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -68,7 +67,8 @@
                                                 aria-haspopup="true" aria-expanded="false">
                                                 <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                             </button>
-                                            
+
+
                                         </div>
                                     </div>
                                     <p class="mb-1">Dépense Totales</p>
@@ -81,9 +81,6 @@
                     </div>
                 </div>
 
-                <!-- Total Revenue -->
-
-                <!--/ Total Revenue -->
                 <div class="col-12 col-md-4 col-lg-12 col-xxl-6 order-2 order-md-2 profile-report">
                     <div class="row">
                         <div class="col-6 mb-6 payments">
@@ -109,7 +106,7 @@
                                     <p class="mb-1">Solde provisoire </p>
                                     <h4 class="card-title mb-3">{{ $budgetprovisoir }} FCFA</h4>
                                     <small class="text-success fw-medium"><i class="icon-base bx bx-down-arrow-alt"></i>
-                                        </small>
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -126,13 +123,14 @@
                                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
                                             </button>
-                                           
+
+
                                         </div>
                                     </div>
                                     <p class="mb-1">Solde Actuel</p>
                                     <h4 class="card-title mb-3">{{ $soldeActuel }} FCFA</h4>
                                     <small class="text-success fw-medium"><i class="icon-base bx bx-up-arrow-alt"></i>
-                                        </small>
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -141,11 +139,6 @@
                 </div>
             </div>
             <div class="row">
-                <!-- Order Statistics -->
-
-                <!--/ Order Statistics -->
-
-                <!-- Transactions -->
                 <div class="col-md-6 col-lg-6 order-2 mb-6">
                     <div class="card h-100">
                         <div class="card-header d-flex align-items-center justify-content-between">
@@ -157,34 +150,33 @@
                             </div>
                         </div>
                         <div class="card-body pt-4">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Description</th>
-                                        <th>Objectif</th>
-                                        <th>Gagné</th>
-                                        <th>Reste à Atteindre</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($categoriesRevenu as $categorie)
+                            <div class="table-responsive"> {{-- Ajout du conteneur responsive --}}
+                                <table class="table table-striped">
+                                    <thead>
                                         <tr>
-                                            <td>{{ $categorie->description }}</td>
-                                           
-                                            <td>{{ $categorie->budgetTotal }} FCFA</td>
-                                            <td>{{ $categorie->budgetReel }} FCFA</td>
-                                            <td>{{$categorie->budgetRestant }} FCFA</td>
+                                            <th>Description</th>
+                                            <th>Objectif</th>
+                                            <th>Gagné</th>
+                                            <th>Reste à Atteindre</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($categoriesRevenu as $categorie)
+                                            <tr>
+                                                <td>{{ $categorie->description }}</td>
+
+                                                <td>{{ $categorie->budgetTotal }} FCFA</td>
+                                                <td>{{ $categorie->budgetReel }} FCFA</td>
+                                                <td>{{$categorie->budgetRestant }} FCFA</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!--/ Transactions -->
 
-                <!-- pill table -->
                 <div class="col-md-6 order-3 order-lg-4 mb-6 mb-lg-0">
                     <div class="card text-center h-100">
                         <div class="card-header nav-align-top">
@@ -199,7 +191,7 @@
                         </div>
                         <div class="tab-content pt-0 pb-4">
                             <div class="tab-pane fade show active" id="navs-pills-browser" role="tabpanel">
-                                <div class="table-responsive text-start text-nowrap">
+                                <div class="table-responsive text-start text-nowrap"> {{-- Ajout du conteneur responsive --}}
                                     <table class="table table-borderless">
                                         <thead>
                                             <tr>
@@ -227,13 +219,8 @@
                         </div>
                     </div>
                 </div>
-                <!--/ pill table -->
-            </div>
+                </div>
 
         </div>
-        <!-- / Content -->
-
-
-    </div>
-    <!-- Content wrapper -->
-@endsection
+        </div>
+    @endsection
